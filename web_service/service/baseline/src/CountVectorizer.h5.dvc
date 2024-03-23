@@ -1,0 +1,5 @@
+outs:
+- md5: a91ae76ea29995970d9e99e41f2cb7c7
+  size: 50136
+  hash: md5
+  path: CountVectorizer.h5
