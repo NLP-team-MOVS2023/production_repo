@@ -28,16 +28,18 @@ from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_applicati
 from config_reader import config
 import message_texts
 
+
 try:
     BOT_TOKEN = config.bot_token.get_secret_value()
 except Exception:
     load_dotenv()
     BOT_TOKEN = os.getenv("BOT_TOKEN")
 
+
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher(bot=bot)
 
-WEBHOOK_HOST = "https://nlp-team-ml-bot.onrender.com"
+WEBHOOK_HOST = "https://nlp-project-movs.onrender.com"
 WEBHOOK_PATH = f"/webhook/{BOT_TOKEN}"
 WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"
 
@@ -46,12 +48,22 @@ allowed_requests = [
     "Сделать предсказание",
     "Оценить работу сервиса",
     "Вывести статистику по сервису",
+    "Проверить статус сервиса"
 ]
+
+
+class NumbersCallbackFactory(CallbackData, prefix="fabnum"):
+    action: str
+    value: Optional[int] = None
+
+
+class PredictorsCallbackFactory(CallbackData, prefix="fabpred"):
+    action: str
+    value: Optional[int] = None
 
 
 def create_logger():
     """Logger initialization"""
-
     logger = logging.getLogger()
     if logger.hasHandlers():
         return logger
@@ -70,16 +82,6 @@ def create_logger():
 
 logger = create_logger()
 logger.info("Creating a logger for Main")
-
-
-class NumbersCallbackFactory(CallbackData, prefix="fabnum"):
-    action: str
-    value: Optional[int] = None
-
-
-class PredictorsCallbackFactory(CallbackData, prefix="fabpred"):
-    action: str
-    value: Optional[int] = None
 
 
 def load_feedback_ratings():
@@ -111,10 +113,10 @@ def setup_bot_commands(
 async def cmd_start(
     message: types.Message,
 ) -> None:
-    """Handle command "start" """
-    user_id = message.from_user.id
-    if user_id not in feedback_ratings:
-        feedback_ratings[user_id] = {}
+    """Handle /start command"""
+    user_name = message.from_user.username
+    if user_name not in feedback_ratings:
+        feedback_ratings[user_name] = {}
     builder = ReplyKeyboardBuilder()
     builder.row(
         types.KeyboardButton(text=allowed_requests[0]),
@@ -124,6 +126,8 @@ async def cmd_start(
     )
     builder.row(types.KeyboardButton(text=allowed_requests[2]))
     builder.row(types.KeyboardButton(text=allowed_requests[3]))
+    builder.row(types.KeyboardButton(text=allowed_requests[4]))
+    requests.post(f"https://nlp-project-movs.onrender.com/create_user/{message.from_user.username}")
     await message.answer(
         message_texts.start,
         reply_markup=builder.as_markup(resize_keyboard=True),
@@ -135,11 +139,25 @@ async def cmd_start(
 async def cmd_help(
     message: types.Message,
 ) -> None:
-    """Handle command "help" """
+    """Handle /help command"""
     await message.answer(
         message_texts.help,
         parse_mode=ParseMode.MARKDOWN,
     )
+
+
+@dp.message(Command("ping"))
+@dp.message(F.text.lower() == allowed_requests[4].lower())
+async def cmd_ping(
+    message: types.Message,
+) -> None:
+    """Handle /ping command"""
+    try:
+        response = requests.get("https://nlp-project-movs.onrender.com/ping")
+        response.raise_for_status()
+        await message.answer(response.text)
+    except HTTPError or ConnectionError:
+        await message.answer(message_texts.connection_error)
 
 
 @dp.message(Command("predict"))
@@ -147,7 +165,7 @@ async def cmd_help(
 async def cmd_predict(
     message: types.Message,
 ) -> None:
-    """Handle command "predict" """
+    """Handle /predict command"""
     await message.answer(
         message_texts.predict,
         parse_mode=ParseMode.MARKDOWN,
@@ -158,7 +176,7 @@ async def cmd_predict(
 async def make_predictions(
     message: types.Message,
 ) -> None:
-    """Handle document"""
+    """Handle input documents"""
     response = None
     if message.document.mime_type == "text/csv":
         await message.answer(message_texts.processing)
@@ -167,7 +185,7 @@ async def make_predictions(
         try:
             response = requests.post(
                 "https://nlp-project-movs.onrender.com/predict",
-                json=df.to_dict(orient="list"),
+                json={'vals': df.to_dict(orient="list"), 'user': message.from_user.username}
             )
             response.raise_for_status()
             response_dict = ast.literal_eval(response.text)
@@ -191,7 +209,7 @@ async def make_predictions(
 async def feedback(
     message: types.Message,
 ) -> None:
-    """Handle command "feedback" """
+    """Handle /feedback command"""
     builder = InlineKeyboardBuilder()
     for i in range(1, 6):
         builder.button(
@@ -211,17 +229,17 @@ async def callbacks_num_change_fab(
     callback_data: NumbersCallbackFactory,
 ) -> None:
     """Handle callbacks from user"""
-    user_id = callback.from_user.id
+    user_name = callback.from_user.username
     timestamp = str(int(time.time()))
     logger.info(
-        "Recieved new callback from user {callback.from_user.id} - {callback.message}"
+        f"Recieved new callback from user {callback.from_user.username}: {callback.message}"
     )
     rating = callback_data.value
 
-    if user_id not in feedback_ratings:
-        feedback_ratings[user_id] = {}
+    if user_name not in feedback_ratings:
+        feedback_ratings[user_name] = {}
 
-    feedback_ratings[user_id][timestamp] = rating
+    feedback_ratings[user_name][timestamp] = rating
 
     with open(config.json_file, "w") as file:
         json.dump(feedback_ratings, file)
@@ -233,12 +251,11 @@ async def callbacks_num_change_fab(
 async def feedback_stats(
     message: types.Message,
 ) -> None:
-    """Handle command "rating" """
+    """Handle /rating command"""
     try:
         with open(config.json_file, "r") as file:
             feedback_ratings = json.load(file)
             if feedback_ratings:
-
                 n = 0
                 summ = 0
                 users = []
@@ -247,7 +264,6 @@ async def feedback_stats(
                         users.append(i)
                         n += 1
                         summ += int(j)
-
                 users = set(users)
                 await message.answer(
                     message_texts.feedback_report.format(
@@ -258,7 +274,6 @@ async def feedback_stats(
                 )
             else:
                 await message.answer(message_texts.no_feedback)
-
     except FileNotFoundError:
         await message.answer(message_texts.no_feedback)
 
@@ -269,7 +284,7 @@ async def not_allowed(
 ) -> None:
     """Handle text not included in commands"""
     logger.info(
-        f"Получено сообщение от пользователя {message.from_user.id}: {message.text}"
+        f"Получено сообщение от пользователя {message.from_user.username}: {message.text}"
     )
     await message.answer(message_texts.invalid_cmd)
 

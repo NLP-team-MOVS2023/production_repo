@@ -17,6 +17,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
+ADD . /app
 
 # Create a non-privileged user that the app will run under.
 # See https://docs.docker.com/go/dockerfile-user-best-practices/
@@ -34,18 +35,23 @@ RUN adduser \
 # Leverage a cache mount to /root/.cache/pip to speed up subsequent builds.
 # Leverage a bind mount to requirements.txt to avoid having to copy them into
 # into this layer.
+RUN set -xe \
+    && apt-get update -y --fix-missing\
+    && apt-get install -y python3-pip
+
 RUN --mount=type=cache,target=/root/.cache/pip \
-    --mount=type=bind,source=requirements.txt,target=requirements.txt \
+    --mount=type=bind \
     python -m pip install -r requirements.txt
 
 # Switch to the non-privileged user to run the application.
 USER appuser
 
+# RUN chown dockuser:dockuser -Rx /app/
 # Copy the source code into the container.
 COPY . .
 
 # Expose the port that the application listens on.
-EXPOSE 8000
+EXPOSE 10000
 
 # Run the application.
-CMD uvicorn bot:bot 0.0.0.0:8000
+CMD python3 /app/bot.py
