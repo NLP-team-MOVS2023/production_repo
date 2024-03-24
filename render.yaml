@@ -1,13 +1,66 @@
-# Exported from Render on 2024-03-23T21:09:59Z
-databases:
-- name: nlp_project
-  databaseName: nlp_project_sgxl
-  user: nlp_project
-  plan: free
-  region: frankfurt
-  ipAllowList:
-  - source: 0.0.0.0/0
-    description: everywhere
-  - source: 10.217.255.13/32
-  postgresMajorVersion: "16"
-version: "1"
+# Comments are provided throughout this file to help you get started.
+# If you need more help, visit the Docker compose reference guide at
+# https://docs.docker.com/go/compose-spec-reference/
+
+# Here the instructions define your application as a service called "server".
+# This service is built from the Dockerfile in the current directory.
+# You can add other services your application may depend on here, such as a
+# database or a cache. For examples, see the Awesome Compose repository:
+# https://github.com/docker/awesome-compose
+services:
+  bot:
+    build:
+      context: telegram_bot
+    env_file:
+      - path: ./telegram_bot/.env
+        required: true # default
+    ports:
+      - '10000:10000'
+    volumes:
+        - ./telegram_bot:/var/lib/bot
+    depends_on:
+      web:
+        condition: service_started
+
+  web:
+    build:
+      context: web_service
+    ports:
+      - '8000:8000'
+    env_file:
+      - path: ./web_service/service/baseline/db/.env
+        required: true # default
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres
+    restart: always
+    user: postgres
+    secrets:
+      - db-password
+    volumes:
+      - ./db_data:/var/lib/postgresql/data
+    environment:
+      - NAME_DB=nlp_project_6eku
+      - USER_DB=nlp_project_6eku_user
+      - POSTGRES_PASSWORD=/run/secrets/db-password
+      - HOST_DB=dpg-cns6rcacn0vc73euehfg-a.frankfurt-postgres.render.com
+    expose:
+      - 5432
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+secrets:
+  db-password:
+    file: .configs/db_password.txt
+
+# networks:
+#   nlp-project-network:
+#     name: nlp-project-network
+#     driver: bridge
+#     attachable: true

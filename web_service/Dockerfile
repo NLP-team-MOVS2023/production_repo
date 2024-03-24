@@ -6,7 +6,7 @@
 
 # Want to help us make this template better? Share your feedback here: https://forms.gle/ybq9Krt8jtBL3iCk7
 
-ARG PYTHON_VERSION=3.12.1
+ARG PYTHON_VERSION=3.11.1
 FROM debian:bullseye-slim
 
 ENV GPG_KEY A035C8C19219BA821ECEA86B64E628F8D684696D
