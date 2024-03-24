@@ -8,56 +8,55 @@
 # database or a cache. For examples, see the Awesome Compose repository:
 # https://github.com/docker/awesome-compose
 services:
-  bot:
-    build:
-      context: telegram_bot
-    env_file:
-      - path: ./telegram_bot/.env
-        required: true # default
-    ports:
-      - '10000:10000'
-    volumes:
-        - ./telegram_bot:/var/lib/bot
-    depends_on:
-      web:
-        condition: service_started
+  - type: web
+    runtime: docker
+    name: bot
+    region: frankfurt
+    plan: free
+    rootDir: telegram_bot
+    dockerfilePath: ./telegram_bot/Dockerfile
+    envVars:
+      - key: BOT_TOKEN
+        sync: true
+      - key: PORT
+        value: '10000:10000'
+    disk:
+      name: telegram_bot
+      mount_path: /telegram_bot
 
-  web:
-    build:
-      context: web_service
-    ports:
-      - '8000:8000'
-    env_file:
-      - path: ./web_service/service/baseline/db/.env
-        required: true # default
-    depends_on:
-      db:
-        condition: service_healthy
+  - type: web
+    runtime: docker
+    name: web
+    region: frankfurt
+    plan: free
+    rootDir: web_service
+    dockerfilePath: ./web_service/Dockerfile
+    envVars:
+      - key: HOST_DB
+        sync: true
+      - key: PORT_DB
+        sync: true
+      - key: USER_DB
+        sync: true
+      - key: PASSWORD_DB
+        sync: true
+      - key: NAME_DB
+        sync: true
+      - key: PORT
+        value: '8000:8000'
 
-  db:
-    image: postgres
-    restart: always
-    user: postgres
-    secrets:
-      - db-password
-    volumes:
-      - ./db_data:/var/lib/postgresql/data
-    environment:
-      - NAME_DB=nlp_project_6eku
-      - USER_DB=nlp_project_6eku_user
-      - POSTGRES_PASSWORD=/run/secrets/db-password
-      - HOST_DB=dpg-cns6rcacn0vc73euehfg-a.frankfurt-postgres.render.com
-    expose:
-      - 5432
-    healthcheck:
-      test: [ "CMD", "pg_isready" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
-secrets:
-  db-password:
-    file: .configs/db_password.txt
+databases:
+- name: postgres
+  databaseName: nlp_project_gmuh
+  user: nlp_project_gmuh_user
+  ipAllowList:
+    - source: 0.0.0.0
+      description: everyone
+
+# secrets:
+#   db-password:
+#     file: .configs/db_password.txt
 
 # networks:
 #   nlp-project-network:
