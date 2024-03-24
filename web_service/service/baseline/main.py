@@ -54,10 +54,10 @@ def predict(vals: ObjectSubject, user: str) -> int:
 
     cur.execute('''select max(id) from ml_model_actions;''')
     row = cur.fetchone()
-    if row:
-        max_id = row[0] + 1
-    else:
-        max_id = 0
+    # if row:
+    #     max_id = row[0] + 1
+    # else:
+    #     max_id = 0
 
     cur.execute(f"""select id from users where name = '{user}';""")
     row = cur.fetchone()
@@ -68,7 +68,7 @@ def predict(vals: ObjectSubject, user: str) -> int:
 
     predicate = predict_pipeline(dict_vals)
     for i in predicate:
-        print(row, max_id)
+        # print(row, max_id)
         cur.execute(f"""
             INSERT
             INTO
@@ -104,7 +104,7 @@ def get_result(res_id: int):
     rows = cur.fetchall()
     res = {}
     for i in enumerate(rows):
-        res[i] = {'subject': rows[2], 'object': rows[3], 'predicate': rows[4], 'probability': rows[5]}
+        res[i] = {'subject': rows[1], 'object': rows[2], 'predicate': rows[3], 'probability': rows[4]}
 
     cur.close()
     conn.close()
@@ -123,21 +123,21 @@ def create_user(user: str):
 
     try:
         base_df = pd.read_sql('select * from users', con=conn)
-        if base_df.empty:
-            max_id = 0
-        else:
-            max_id = base_df.id.max() + 1
+        # if base_df.empty:
+        #     max_id = 0
+        # else:
+        #     max_id = base_df.id.max() + 1
         if base_df[base_df['name'] == user].empty:
             cur.execute(f'''INSERT
                             INTO
-                            users (id, name, registry_timestamp)
-                            VALUES({max_id}, '{user}', {time.mktime(datetime.now().timetuple())});''')
+                            users (name, registry_timestamp)
+                            VALUES('{user}', {time.mktime(datetime.now().timetuple())});''')
             return {"message": "Юзер удачно добавлен"}
         else:
             return {"message": "Юзер существует"}
 
-        cur.close()
-        conn.close()
+        # cur.close()
+        # conn.close()
     except:
         raise HTTPException(status_code=422)
 
