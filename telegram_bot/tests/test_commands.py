@@ -19,13 +19,6 @@ from bot import feedback_ratings
 import message_texts
 from config_reader import config
 
-allowed_requests = [
-    "Как пользоваться этим сервисом",
-    "Сделать предсказание",
-    "Оценить работу сервиса",
-    "Вывести статистику по сервису",
-]
-
 
 @patch("builtins.open")
 def test_load_feedback_ratings_nofile(open_mock):
@@ -44,26 +37,58 @@ def test_load_feedback_ratings_file(full_json):
 
 
 @pytest.mark.asyncio
+@patch.object(requests, "post")
 @patch.dict(feedback_ratings, {}, clear=True)
-async def test_cmd_start(empty_json):
+async def test_cmd_start(post, empty_json):
     message = AsyncMock()
     message.from_user.id = "1"
 
+    post.return_value.status_code = 200
+    post.return_value.raise_for_statue.side_effect = None
+
     builder = ReplyKeyboardBuilder()
     builder.row(
-        types.KeyboardButton(text=allowed_requests[0]),
+        types.KeyboardButton(text=message_texts.allowed_requests[0]),
     )
     builder.row(
-        types.KeyboardButton(text=allowed_requests[1]),
+        types.KeyboardButton(text=message_texts.allowed_requests[1]),
     )
-    builder.row(types.KeyboardButton(text=allowed_requests[2]))
-    builder.row(types.KeyboardButton(text=allowed_requests[3]))
+    builder.row(types.KeyboardButton(text=message_texts.allowed_requests[2]))
+    builder.row(types.KeyboardButton(text=message_texts.allowed_requests[3]))
+    builder.row(types.KeyboardButton(text=message_texts.allowed_requests[4]))
 
     await bot.cmd_start(message)
     message.answer.assert_called_with(
         message_texts.start,
         reply_markup=builder.as_markup(resize_keyboard=True)
     )
+    assert feedback_ratings["1"] == {}
+
+
+@pytest.mark.asyncio
+@patch.dict(feedback_ratings, {}, clear=True)
+@patch.object(requests, "post")
+async def test_cmd_start_500(post, empty_json):
+    message = AsyncMock()
+    message.from_user.id = "1"
+
+    post.return_value.status_code = 500
+    post.return_value.raise_for_status.side_effect = HTTPError()
+
+    builder = ReplyKeyboardBuilder()
+    builder.row(
+        types.KeyboardButton(text=message_texts.allowed_requests[0]),
+    )
+    builder.row(
+        types.KeyboardButton(text=message_texts.allowed_requests[1]),
+    )
+    builder.row(types.KeyboardButton(text=message_texts.allowed_requests[2]))
+    builder.row(types.KeyboardButton(text=message_texts.allowed_requests[3]))
+    builder.row(types.KeyboardButton(text=message_texts.allowed_requests[4]))
+
+    await bot.cmd_start(message)
+    message.answer.assert_called_with(
+        message_texts.connection_error)
     assert feedback_ratings["1"] == {}
 
 
@@ -89,7 +114,32 @@ async def test_cmd_predict():
 
 
 @pytest.mark.asyncio
-@patch.object(bot.bot, "download", return_value=open(r"tests\data\data.csv"))
+@patch.object(requests, "get")
+async def test_cmd_ping(get):
+    message = AsyncMock()
+
+    get.return_value.text = "Ok!"
+    get.return_value.status_code = 200
+    get.return_value.raise_for_status.side_effect = None
+
+    await bot.cmd_ping(message)
+    message.answer.assert_called_with(get.return_value.text)
+
+
+@pytest.mark.asyncio
+@patch.object(requests, "get")
+async def test_cmd_ping_500(get):
+    message = AsyncMock()
+
+    get.return_value.status_code = 500
+    get.return_value.raise_for_status.side_effect = HTTPError()
+
+    await bot.cmd_ping(message)
+    message.answer.assert_called_with(message_texts.connection_error)
+
+
+@pytest.mark.asyncio
+@patch.object(bot.bot, "download", return_value=open(r"tests/data/data.csv"))
 @patch.object(bot.bot, "send_document")
 @patch.object(requests, "post")
 async def test_make_predictions(post, send_document, download):
@@ -107,7 +157,7 @@ async def test_make_predictions(post, send_document, download):
 
     post.return_value.text = str({"1": "4"})
     post.return_value.status_code = 200
-    post.return_value.raise_for_statue.side_effect = None
+    post.return_value.raise_for_status.side_effect = None
 
     await bot.make_predictions(message)
 
@@ -124,7 +174,7 @@ async def test_make_predictions(post, send_document, download):
 
 
 @pytest.mark.asyncio
-@patch.object(bot.bot, "download", return_value=open(r"tests\data\data.csv"))
+@patch.object(bot.bot, "download", return_value=open(r"tests/data/data.csv"))
 @patch.object(requests, "post")
 async def test_make_predictions_500(post, download):
     message = AsyncMock()
@@ -138,7 +188,7 @@ async def test_make_predictions_500(post, download):
     await bot.make_predictions(message)
 
     download.assert_called_with(message.document)
-    message.answer.has_calls(
+    await message.answer.has_calls(
         [call(message_texts.processing), call(message_texts.connection_error)],
         any_order=False,
     )

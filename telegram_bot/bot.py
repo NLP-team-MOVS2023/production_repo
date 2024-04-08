@@ -2,14 +2,12 @@ import io
 import json
 import logging
 import time
-import os
 from typing import Optional
 
 import ast
 import asyncio
 import pandas as pd
 import numpy as np
-from dotenv import load_dotenv
 
 import requests
 from requests.exceptions import HTTPError, ConnectionError
@@ -29,27 +27,8 @@ from config_reader import config
 import message_texts
 
 
-try:
-    BOT_TOKEN = config.bot_token.get_secret_value()
-except Exception:
-    load_dotenv()
-    BOT_TOKEN = os.getenv("BOT_TOKEN")
-
-
-bot = Bot(token=BOT_TOKEN)
+bot = Bot(token=config.bot_token)
 dp = Dispatcher(bot=bot)
-
-WEBHOOK_HOST = "https://nlp-project-movs.onrender.com"
-WEBHOOK_PATH = f"/webhook/{BOT_TOKEN}"
-WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"
-
-allowed_requests = [
-    "Как пользоваться этим сервисом",
-    "Сделать предсказание",
-    "Оценить работу сервиса",
-    "Вывести статистику по сервису",
-    "Проверить статус сервиса"
-]
 
 
 class NumbersCallbackFactory(CallbackData, prefix="fabnum"):
@@ -98,7 +77,7 @@ def load_feedback_ratings():
 feedback_ratings = load_feedback_ratings()
 
 
-def setup_bot_commands(
+async def setup_bot_commands(
     bot: Bot,
 ) -> None:
     """Setting default Bot commands for command menu"""
@@ -106,7 +85,7 @@ def setup_bot_commands(
         BotCommand(command="/help", description="Как пользоваться?"),
         BotCommand(command="/start", description="Начать"),
     ]
-    bot.set_my_commands(bot_commands)
+    await bot.set_my_commands(bot_commands)
 
 
 @dp.message(Command("start"))
@@ -114,28 +93,30 @@ async def cmd_start(
     message: types.Message,
 ) -> None:
     """Handle /start command"""
-    user_name = message.from_user.username
-    if user_name not in feedback_ratings:
-        feedback_ratings[user_name] = {}
+    uid = message.from_user.id
+    if uid not in feedback_ratings:
+        feedback_ratings[uid] = {}
     builder = ReplyKeyboardBuilder()
-    builder.row(
-        types.KeyboardButton(text=allowed_requests[0]),
-    )
-    builder.row(
-        types.KeyboardButton(text=allowed_requests[1]),
-    )
-    builder.row(types.KeyboardButton(text=allowed_requests[2]))
-    builder.row(types.KeyboardButton(text=allowed_requests[3]))
-    builder.row(types.KeyboardButton(text=allowed_requests[4]))
-    requests.post(f"https://nlp-project-movs.onrender.com/create_user/{message.from_user.username}")
-    await message.answer(
-        message_texts.start,
-        reply_markup=builder.as_markup(resize_keyboard=True),
-    )
+    builder.row(types.KeyboardButton(text=message_texts.allowed_requests[0]))
+    builder.row(types.KeyboardButton(text=message_texts.allowed_requests[1]))
+    builder.row(types.KeyboardButton(text=message_texts.allowed_requests[2]))
+    builder.row(types.KeyboardButton(text=message_texts.allowed_requests[3]))
+    builder.row(types.KeyboardButton(text=message_texts.allowed_requests[4]))
+    try:
+        response = requests.post(
+            f"https://nlp-project-movs.onrender.com/create_user/{message.from_user.id}"
+        )
+        response.raise_for_status()
+        await message.answer(
+            message_texts.start,
+            reply_markup=builder.as_markup(resize_keyboard=True),
+        )
+    except HTTPError or ConnectionError:
+        await message.answer(message_texts.connection_error)
 
 
 @dp.message(Command("help"))
-@dp.message(F.text.lower() == allowed_requests[0].lower())
+@dp.message(F.text.lower() == message_texts.allowed_requests[0].lower())
 async def cmd_help(
     message: types.Message,
 ) -> None:
@@ -147,7 +128,7 @@ async def cmd_help(
 
 
 @dp.message(Command("ping"))
-@dp.message(F.text.lower() == allowed_requests[4].lower())
+@dp.message(F.text.lower() == message_texts.allowed_requests[4].lower())
 async def cmd_ping(
     message: types.Message,
 ) -> None:
@@ -161,7 +142,7 @@ async def cmd_ping(
 
 
 @dp.message(Command("predict"))
-@dp.message(F.text.lower() == allowed_requests[1].lower())
+@dp.message(F.text.lower() == message_texts.allowed_requests[1].lower())
 async def cmd_predict(
     message: types.Message,
 ) -> None:
@@ -181,19 +162,21 @@ async def make_predictions(
     if message.document.mime_type == "text/csv":
         await message.answer(message_texts.processing)
         file_bytes = await bot.download(message.document)
-        df = pd.read_csv(file_bytes, encoding='utf-8', sep=None)
+        df = pd.read_csv(file_bytes, encoding="utf-8", sep=None, engine="python")
         try:
             response = requests.post(
                 "https://nlp-project-movs.onrender.com/predict",
-                json={'vals': df.to_dict(orient="list"), 'user': message.from_user.username}
+                json={
+                    "vals": df.to_dict(orient="list"),
+                    "user": message.from_user.username,
+                },
             )
             response.raise_for_status()
             response_dict = ast.literal_eval(response.text)
             response_df = pd.DataFrame(response_dict.values())
             response_csv = response_df.to_csv(index=False)
             predictions = BufferedInputFile(
-                io.BytesIO(response_csv.encode()).getvalue(),
-                filename="predictions.csv"
+                io.BytesIO(response_csv.encode()).getvalue(), filename="predictions.csv"
             )
             await bot.send_document(
                 message.chat.id, predictions, caption=message_texts.predictions
@@ -205,7 +188,7 @@ async def make_predictions(
 
 
 @dp.message(Command("feedback"))
-@dp.message(F.text.lower() == allowed_requests[2].lower())
+@dp.message(F.text.lower() == message_texts.allowed_requests[2].lower())
 async def feedback(
     message: types.Message,
 ) -> None:
@@ -230,16 +213,15 @@ async def callbacks_num_change_fab(
 ) -> None:
     """Handle callbacks from user"""
     user_name = callback.from_user.username
+    uid = callback.from_user.id
     timestamp = str(int(time.time()))
-    logger.info(
-        f"Recieved new callback from user {callback.from_user.username}: {callback.message}"
-    )
+    logger.info(f"Recieved new callback from user {user_name}: {callback.message}")
     rating = callback_data.value
 
-    if user_name not in feedback_ratings:
-        feedback_ratings[user_name] = {}
+    if uid not in feedback_ratings:
+        feedback_ratings[uid] = {}
 
-    feedback_ratings[user_name][timestamp] = rating
+    feedback_ratings[uid][timestamp] = rating
 
     with open(config.json_file, "w") as file:
         json.dump(feedback_ratings, file)
@@ -247,7 +229,7 @@ async def callbacks_num_change_fab(
 
 
 @dp.message(Command("rating"))
-@dp.message(F.text.lower() == allowed_requests[3].lower())
+@dp.message(F.text.lower() == message_texts.allowed_requests[3].lower())
 async def feedback_stats(
     message: types.Message,
 ) -> None:
@@ -290,26 +272,29 @@ async def not_allowed(
 
 
 async def on_startup(bot: Bot) -> None:
-    await bot.set_webhook(url=WEBHOOK_URL)
+    await bot.set_webhook(url=config.webhook_url)
 
 
 async def on_shutdown(dp):
     await bot.delete_webhook()
 
 
-def main():
-    setup_bot_commands(bot)
-    dp.startup.register(on_startup)
-    app = web.Application()
-    webhook_requests_handler = SimpleRequestHandler(
-        dispatcher=dp,
-        bot=bot,
-    )
-    webhook_requests_handler.register(app, path=WEBHOOK_PATH)
-    setup_application(app, dp, bot=bot)
-    web.run_app(app, host='0.0.0.0', port=10000)
+async def main():
+    await setup_bot_commands(bot)
+
+    if config.env_type == "local":
+        await dp.start_polling(bot)
+    else:
+        dp.startup.register(on_startup)
+        app = web.Application()
+        webhook_requests_handler = SimpleRequestHandler(
+            dispatcher=dp,
+            bot=bot,
+        )
+        webhook_requests_handler.register(app, path=config.webhook_path)
+        setup_application(app, dp, bot=bot)
+        await web.run_app(app, host="0.0.0.0", port=10000)
 
 
 if __name__ == "__main__":
     asyncio.run(main())
-    # main()
