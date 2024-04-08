@@ -1,9 +1,9 @@
-commands = [f'''create table users (
+commands = ['''create table users (
                                 id SERIAL PRIMARY KEY,
                                 name VARCHAR(100) NOT NULL,
                                 registry_timestamp INT NOT NULL);''',
 
-            f'''create table ml_model_actions (
+            '''create table ml_model_actions (
                         id SERIAL PRIMARY KEY,
                         user_id SERIAL,
                         timestamp INT NOT NULL,

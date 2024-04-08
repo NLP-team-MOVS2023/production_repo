@@ -1,7 +1,7 @@
 import pandas as pd
-import dvc.api
+# import dvc.api
 import joblib
-import os
+# import os
 
 
 def predict_pipeline(js):
@@ -35,7 +35,7 @@ def predict_pipeline(js):
 
     with open(model_pkl_file, 'rb') as f:
         model = joblib.load(f)
-    
+
     with open(vectorizer_file, 'rb') as f:
         vec = joblib.load(f)
 
@@ -56,5 +56,4 @@ def predict_pipeline(js):
     df['predicates'] = preds
 
     res = df.to_dict('index')
-    
     return res
