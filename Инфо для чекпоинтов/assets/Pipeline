@@ -1,0 +1,49 @@
+<mxfile host="app.diagrams.net" modified="2023-10-30T20:52:40.639Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36" etag="evHmnUt0b3XEHXuJDwJu" version="22.0.8" type="github">
+  <diagram name="Страница — 1" id="LoKFn9zTqr_cdn6rsu6-">
+    <mxGraphModel dx="1444" dy="862" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" background="none" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="Unp_19I711b7Fh9SQSlU-1" value="Input&lt;br&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;предложение&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="50" y="270" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="Unp_19I711b7Fh9SQSlU-2" value="&lt;span style=&quot;background-color: initial;&quot;&gt;POS-разметка&lt;br&gt;ML part&lt;br&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="520" y="270" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="Unp_19I711b7Fh9SQSlU-3" value="&lt;span style=&quot;background-color: initial;&quot;&gt;BERT model&lt;br&gt;DL part&lt;br&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="740" y="270" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="Unp_19I711b7Fh9SQSlU-4" value="&lt;span style=&quot;background-color: initial;&quot;&gt;Output&lt;br&gt;объекты, их описания и связи&lt;br&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="960" y="270" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="Unp_19I711b7Fh9SQSlU-5" value="" style="endArrow=block;endFill=1;html=1;edgeStyle=orthogonalEdgeStyle;align=left;verticalAlign=top;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="Unp_19I711b7Fh9SQSlU-9" target="Unp_19I711b7Fh9SQSlU-2" edge="1">
+          <mxGeometry x="-1" relative="1" as="geometry">
+            <mxPoint x="220" y="220" as="sourcePoint" />
+            <mxPoint x="510" y="270" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Unp_19I711b7Fh9SQSlU-7" value="" style="endArrow=block;endFill=1;html=1;edgeStyle=orthogonalEdgeStyle;align=left;verticalAlign=top;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="Unp_19I711b7Fh9SQSlU-2" target="Unp_19I711b7Fh9SQSlU-3" edge="1">
+          <mxGeometry x="-1" relative="1" as="geometry">
+            <mxPoint x="420" y="219.5" as="sourcePoint" />
+            <mxPoint x="510" y="219.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Unp_19I711b7Fh9SQSlU-8" value="" style="endArrow=block;endFill=1;html=1;edgeStyle=orthogonalEdgeStyle;align=left;verticalAlign=top;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="Unp_19I711b7Fh9SQSlU-3" target="Unp_19I711b7Fh9SQSlU-4" edge="1">
+          <mxGeometry x="-1" relative="1" as="geometry">
+            <mxPoint x="610" y="270" as="sourcePoint" />
+            <mxPoint x="690" y="270" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Unp_19I711b7Fh9SQSlU-9" value="&lt;span style=&quot;background-color: initial;&quot;&gt;Предобработка данных&lt;br&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="300" y="270" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="Unp_19I711b7Fh9SQSlU-10" value="" style="endArrow=block;endFill=1;html=1;edgeStyle=orthogonalEdgeStyle;align=left;verticalAlign=top;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="Unp_19I711b7Fh9SQSlU-1" target="Unp_19I711b7Fh9SQSlU-9" edge="1">
+          <mxGeometry x="-1" relative="1" as="geometry">
+            <mxPoint x="190" y="340" as="sourcePoint" />
+            <mxPoint x="510" y="390" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
