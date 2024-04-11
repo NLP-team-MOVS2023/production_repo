@@ -11,9 +11,6 @@ services:
         sync: true
       - key: PORT
         value: '10000:10000'
-    disk:
-      name: telegram_bot
-      mount_path: ./telegram_bot
 
   - type: web
     runtime: docker
