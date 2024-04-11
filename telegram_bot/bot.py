@@ -154,7 +154,7 @@ async def make_predictions(
                 f"{config.webhook_host}/predict",
                 json={
                     "vals": df.to_dict(orient="list"),
-                    "user": message.from_user.id,
+                    "user": int(message.from_user.id),
                 },
             )
             response.raise_for_status()
