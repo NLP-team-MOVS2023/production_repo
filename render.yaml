@@ -8,7 +8,7 @@ services:
     dockerfilePath: ./telegram_bot/Dockerfile
     envVars:
       - key: BOT_TOKEN
-        sync: true
+        sync: false
       - key: PORT
         value: '10000:10000'
 
@@ -21,15 +21,15 @@ services:
     dockerfilePath: ./web_service/Dockerfile
     envVars:
       - key: HOST_DB
-        sync: true
+        sync: false
       - key: PORT_DB
-        sync: true
+        sync: false
       - key: USER_DB
-        sync: true
+        sync: false
       - key: PASSWORD_DB
-        sync: true
+        sync: false
       - key: NAME_DB
-        sync: true
+        sync: false
       - key: PORT
         value: '8000:8000'
 
