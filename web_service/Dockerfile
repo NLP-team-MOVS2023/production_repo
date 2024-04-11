@@ -38,9 +38,7 @@ RUN set -xe \
     && apt-get install -y python3.10
 
 COPY service/baseline/src/requirements.txt requirements.txt
-RUN pip install \
-    --upgrade pip \
-    -r requirements.txt
+RUN pip install -r requirements.txt
 
 # Switch to the non-privileged user to run the application.
 USER appuser
