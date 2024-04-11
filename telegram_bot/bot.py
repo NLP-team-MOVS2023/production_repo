@@ -270,6 +270,7 @@ async def not_allowed(
 
 async def main():
     # if config.env_type == "local":
+    await bot.delete_webhook()
     await dp.start_polling(bot)
     # else:
     #     dp.startup.register(on_startup)
@@ -284,5 +285,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    bot.delete_webhook()
     asyncio.run(main())
