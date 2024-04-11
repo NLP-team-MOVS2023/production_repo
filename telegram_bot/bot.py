@@ -270,7 +270,7 @@ async def on_shutdown(dp):
 
 async def main():
     # if config.env_type == "local":
-    dp.start_polling(bot)
+    await dp.start_polling(bot)
     # else:
     #     dp.startup.register(on_startup)
     #     app = web.Application()
