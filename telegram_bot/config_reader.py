@@ -1,11 +1,12 @@
 import os
+from typing import Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     bot_token: str
-    env_type: str
+    env_type: Optional[str]
     json_file: str = "data/feedback_ratings.json"
     webhook_host: str = "https://nlp-project-movs.onrender.com"
 

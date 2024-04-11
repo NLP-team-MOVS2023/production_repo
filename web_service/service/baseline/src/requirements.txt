@@ -1,6 +1,5 @@
 pandas == 1.5.3
 dvc == 3.39.0
-# platformdirs == 3.11.0
 scikit-learn == 1.3.0
 pandas
 dvc-gdrive
@@ -10,3 +9,4 @@ fastapi
 psycopg2-binary
 python-dotenv
 pydantic-settings
+sqlalchemy
