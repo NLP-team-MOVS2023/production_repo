@@ -15,7 +15,7 @@ from requests.exceptions import HTTPError, ConnectionError
 from aiogram import F
 from aiogram import Bot, Dispatcher, types
 from aiogram.enums import ParseMode
-from aiogram.types import BufferedInputFile, BotCommand
+from aiogram.types import BufferedInputFile
 from aiogram.filters.command import Command
 from aiogram.filters.callback_data import CallbackData
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
@@ -284,9 +284,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    bot_commands = [
-        BotCommand(command="/help", description="Как пользоваться?"),
-        BotCommand(command="/start", description="Начать"),
-    ]
-    bot.set_my_commands(bot_commands)
     asyncio.run(main())
