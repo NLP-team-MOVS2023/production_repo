@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     PASSWORD_DB: str
     NAME_DB: str
 
-    env_type: Optional[str]
+    env_type: Optional[str] = None
 
     @property
     def connection_url(self):
