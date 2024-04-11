@@ -77,20 +77,6 @@ def load_feedback_ratings():
 feedback_ratings = load_feedback_ratings()
 
 
-def setup_bot_commands(
-    bot: Bot,
-) -> None:
-    """Setting default Bot commands for command menu"""
-    bot_commands = [
-        BotCommand(command="/help", description="Как пользоваться?"),
-        BotCommand(command="/start", description="Начать"),
-    ]
-    bot.set_my_commands(bot_commands)
-
-
-setup_bot_commands(bot)
-
-
 @dp.message(Command("start"))
 async def cmd_start(
     message: types.Message,
@@ -282,19 +268,24 @@ async def on_shutdown(dp):
     await bot.delete_webhook()
 
 
-def main():
+async def main():
+    bot_commands = [
+        BotCommand(command="/help", description="Как пользоваться?"),
+        BotCommand(command="/start", description="Начать"),
+    ]
+    await bot.set_my_commands(bot_commands)
     if config.env_type == "local":
-        dp.start_polling(bot)
+        await dp.start_polling(bot)
     else:
-        dp.startup.register(on_startup)
+        await dp.startup.register(on_startup)
         app = web.Application()
         webhook_requests_handler = SimpleRequestHandler(
             dispatcher=dp,
             bot=bot,
         )
-        webhook_requests_handler.register(app, path=config.webhook_path)
-        setup_application(app, dp, bot=bot)
-        web.run_app(app, host="0.0.0.0", port=10000)
+        await webhook_requests_handler.register(app, path=config.webhook_path)
+        await setup_application(app, dp, bot=bot)
+        await web.run_app(app, host="0.0.0.0", port=10000)
 
 
 if __name__ == "__main__":
