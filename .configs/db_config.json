@@ -1,7 +1,0 @@
-{
-    "HOST_DB" : "dpg-cns6rcacn0vc73euehfg-a.frankfurt-postgres.render.com",
-    "PORT_DB" : 5432,
-    "USER_DB" : "nlp_project_6eku_user",
-    "PASSWORD_DB" : "iCtIfxbTHLlViT5GomvX5ZS8y4ed4oOC",
-    "NAME_DB" : "nlp_project_6eku"
-}
