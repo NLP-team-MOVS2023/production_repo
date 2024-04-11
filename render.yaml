@@ -5,7 +5,7 @@ services:
     region: frankfurt
     plan: free
     rootDir: telegram_bot
-    dockerfilePath: ./telegram_bot/Dockerfile
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: BOT_TOKEN
         sync: false
@@ -18,7 +18,7 @@ services:
     region: frankfurt
     plan: free
     rootDir: web_service
-    dockerfilePath: ./web_service/Dockerfile
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: HOST_DB
         sync: false
