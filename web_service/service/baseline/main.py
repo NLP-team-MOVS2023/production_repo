@@ -119,7 +119,7 @@ def get_result(res_id: int, db: Session = Depends(get_db)):
 @app.post("/create_user/{user}")
 def create_user(user: str, db: Session = Depends(get_db)):
     try:
-        base_df = pd.read_sql("select * from users", con=db.connection())
+        base_df = pd.read_sql(text("select * from users"), con=db.connection())
 
         if base_df[base_df["name"] == user].empty:
             db_user = User(
