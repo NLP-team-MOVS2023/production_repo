@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     bot_token: str
     env_type: Optional[str] = None
     json_file: str = "data/feedback_ratings.json"
-    webhook_host: str = "https://bot-xy4x.onrender.com"
+    webhook_host: str = "https://web-z763.onrender.com"
 
     @property
     def webhook_path(self):
