@@ -20,9 +20,6 @@ from aiogram.filters.command import Command
 from aiogram.filters.callback_data import CallbackData
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 
-# from aiohttp import web
-# from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
-
 from config_reader import config
 import message_texts
 
@@ -157,7 +154,7 @@ async def make_predictions(
                 f"{config.webhook_host}/predict",
                 json={
                     "vals": df.to_dict(orient="list"),
-                    "user": message.from_user.username,
+                    "user": message.from_user.id,
                 },
             )
             response.raise_for_status()
@@ -260,28 +257,8 @@ async def not_allowed(
     await message.answer(message_texts.invalid_cmd)
 
 
-# async def on_startup(bot: Bot) -> None:
-#     await bot.set_webhook(url=config.webhook_url)
-
-
-# async def on_shutdown(dp):
-#     await bot.delete_webhook()
-
-
 async def main():
-    # if config.env_type == "local":
-    await bot.delete_webhook()
     await dp.start_polling(bot)
-    # else:
-    #     dp.startup.register(on_startup)
-    #     app = web.Application()
-    #     webhook_requests_handler = SimpleRequestHandler(
-    #         dispatcher=dp,
-    #         bot=bot,
-    #     )
-    #     webhook_requests_handler.register(app, path=config.webhook_path)
-    #     setup_application(app, dp, bot=bot)
-    #     web.run_app(app, host="0.0.0.0", port=10000)
 
 
 if __name__ == "__main__":
