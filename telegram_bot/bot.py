@@ -50,7 +50,7 @@ def create_logger():
     formatter = logging.Formatter(
         "%(asctime)s [%(levelname)s] {%(pathname)s:%(lineno)d} %(name)s : %(message)s"
     )
-    file_handler = logging.FileHandler(filename="log/log.log", encoding="utf-8")
+    file_handler = logging.StreamHandler()
     file_handler.setFormatter(formatter)
     stream_handler = logging.StreamHandler()
     stream_handler.setFormatter(formatter)
