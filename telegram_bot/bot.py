@@ -5,7 +5,7 @@ import time
 from typing import Optional
 
 import ast
-# import asyncio
+import asyncio
 import pandas as pd
 import numpy as np
 
@@ -268,7 +268,7 @@ async def on_shutdown(dp):
     await bot.delete_webhook()
 
 
-def main():
+async def main():
     # if config.env_type == "local":
     dp.start_polling(bot)
     # else:
@@ -284,4 +284,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
