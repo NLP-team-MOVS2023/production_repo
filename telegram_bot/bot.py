@@ -260,12 +260,12 @@ async def not_allowed(
     await message.answer(message_texts.invalid_cmd)
 
 
-async def on_startup(bot: Bot) -> None:
-    await bot.set_webhook(url=config.webhook_url)
+# async def on_startup(bot: Bot) -> None:
+#     await bot.set_webhook(url=config.webhook_url)
 
 
-async def on_shutdown(dp):
-    await bot.delete_webhook()
+# async def on_shutdown(dp):
+#     await bot.delete_webhook()
 
 
 async def main():
@@ -284,4 +284,5 @@ async def main():
 
 
 if __name__ == "__main__":
+    bot.delete_webhook()
     asyncio.run(main())
