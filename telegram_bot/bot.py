@@ -20,8 +20,8 @@ from aiogram.filters.command import Command
 from aiogram.filters.callback_data import CallbackData
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 
-from aiohttp import web
-from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
+# from aiohttp import web
+# from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 
 from config_reader import config
 import message_texts
@@ -269,18 +269,18 @@ async def on_shutdown(dp):
 
 
 def main():
-    if config.env_type == "local":
-        dp.start_polling(bot)
-    else:
-        dp.startup.register(on_startup)
-        app = web.Application()
-        webhook_requests_handler = SimpleRequestHandler(
-            dispatcher=dp,
-            bot=bot,
-        )
-        webhook_requests_handler.register(app, path=config.webhook_path)
-        setup_application(app, dp, bot=bot)
-        web.run_app(app, host="0.0.0.0", port=10000)
+    # if config.env_type == "local":
+    dp.start_polling(bot)
+    # else:
+    #     dp.startup.register(on_startup)
+    #     app = web.Application()
+    #     webhook_requests_handler = SimpleRequestHandler(
+    #         dispatcher=dp,
+    #         bot=bot,
+    #     )
+    #     webhook_requests_handler.register(app, path=config.webhook_path)
+    #     setup_application(app, dp, bot=bot)
+    #     web.run_app(app, host="0.0.0.0", port=10000)
 
 
 if __name__ == "__main__":
