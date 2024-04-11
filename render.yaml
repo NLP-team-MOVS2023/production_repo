@@ -38,6 +38,7 @@ databases:
 - name: postgres
   databaseName: nlp_project_gmuh
   user: nlp_project_gmuh_user
+  plan: free
   ipAllowList:
     - source: 0.0.0.0
       description: everyone
