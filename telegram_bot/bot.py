@@ -5,6 +5,7 @@ import time
 from typing import Optional
 
 import ast
+import asyncio
 import pandas as pd
 import numpy as np
 
@@ -279,8 +280,6 @@ async def on_shutdown(dp):
 
 
 def main():
-    setup_bot_commands(bot)
-
     if config.env_type == "local":
         dp.start_polling(bot)
     else:
@@ -296,4 +295,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    setup_bot_commands(bot)
+    asyncio.run(main())
