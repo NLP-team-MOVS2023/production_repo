@@ -277,13 +277,13 @@ async def main():
     if config.env_type == "local":
         await dp.start_polling(bot)
     else:
-        await dp.startup.register(on_startup)
+        dp.startup.register(on_startup)
         app = web.Application()
         webhook_requests_handler = SimpleRequestHandler(
             dispatcher=dp,
             bot=bot,
         )
-        await webhook_requests_handler.register(app, path=config.webhook_path)
+        webhook_requests_handler.register(app, path=config.webhook_path)
         await setup_application(app, dp, bot=bot)
         await web.run_app(app, host="0.0.0.0", port=10000)
 
