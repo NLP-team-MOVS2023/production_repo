@@ -35,7 +35,7 @@ RUN adduser \
 
 RUN set -xe \
     && apt-get update -y --fix-missing\
-    && apt-get install -y python3.10
+    && apt-get install -y python3.10 python3-pip
 
 COPY service/baseline/src/requirements.txt requirements.txt
 RUN pip install -r requirements.txt
