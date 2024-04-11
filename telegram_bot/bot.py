@@ -88,6 +88,9 @@ def setup_bot_commands(
     bot.set_my_commands(bot_commands)
 
 
+setup_bot_commands(bot)
+
+
 @dp.message(Command("start"))
 async def cmd_start(
     message: types.Message,
@@ -295,5 +298,4 @@ def main():
 
 
 if __name__ == "__main__":
-    setup_bot_commands(bot)
     asyncio.run(main())

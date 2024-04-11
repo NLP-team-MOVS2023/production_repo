@@ -18,6 +18,10 @@ Then, push it to your registry, e.g. `docker push myregistry.com/myapp`.
 Consult Docker's [getting started](https://docs.docker.com/go/get-started-sharing/)
 docs for more detail on building and pushing.
 
+### Running tests
+Telegram Bot tests can be ran by running `pytest` from `telegram_bot` directory
+App tests can be ran by running `pytest service/baseline/test_main.py` from `web_service` directory
+
 ### References
 * [Docker's Python guide](https://docs.docker.com/language/python/)
 
