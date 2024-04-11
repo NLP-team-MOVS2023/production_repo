@@ -269,11 +269,6 @@ async def on_shutdown(dp):
 
 
 async def main():
-    bot_commands = [
-        BotCommand(command="/help", description="Как пользоваться?"),
-        BotCommand(command="/start", description="Начать"),
-    ]
-    bot.set_my_commands(bot_commands)
     if config.env_type == "local":
         dp.start_polling(bot)
     else:
@@ -289,4 +284,9 @@ async def main():
 
 
 if __name__ == "__main__":
+    bot_commands = [
+        BotCommand(command="/help", description="Как пользоваться?"),
+        BotCommand(command="/start", description="Начать"),
+    ]
+    bot.set_my_commands(bot_commands)
     asyncio.run(main())
