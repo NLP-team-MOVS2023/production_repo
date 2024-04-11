@@ -19,7 +19,7 @@ Consult Docker's [getting started](https://docs.docker.com/go/get-started-sharin
 docs for more detail on building and pushing.
 
 ### Running tests
-Telegram Bot tests can be ran by running `pytest` from `telegram_bot` directory
+Telegram Bot tests can be ran by running `pytest` from `telegram_bot` directory <br>
 App tests can be ran by running `pytest service/baseline/test_main.py` from `web_service` directory
 
 ### References
