@@ -104,7 +104,7 @@ async def cmd_start(
     builder.row(types.KeyboardButton(text=message_texts.allowed_requests[4]))
     try:
         response = requests.post(
-            f"https://nlp-project-movs.onrender.com/create_user/{message.from_user.id}"
+            f"{config.webhook_host}/create_user/{message.from_user.id}"
         )
         response.raise_for_status()
         await message.answer(
@@ -134,7 +134,7 @@ async def cmd_ping(
 ) -> None:
     """Handle /ping command"""
     try:
-        response = requests.get("https://nlp-project-movs.onrender.com/ping")
+        response = requests.get(f"{config.webhook_host}/ping")
         response.raise_for_status()
         await message.answer(response.text)
     except HTTPError or ConnectionError:
@@ -165,7 +165,7 @@ async def make_predictions(
         df = pd.read_csv(file_bytes, encoding="utf-8", sep=None, engine="python")
         try:
             response = requests.post(
-                "https://nlp-project-movs.onrender.com/predict",
+                f"{config.webhook_host}/predict",
                 json={
                     "vals": df.to_dict(orient="list"),
                     "user": message.from_user.username,

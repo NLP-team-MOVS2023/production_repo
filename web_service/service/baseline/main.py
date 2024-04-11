@@ -1,164 +1,155 @@
-import os
 import psycopg2
 import pandas as pd
 import time
 
-from fastapi import FastAPI, HTTPException
 from datetime import datetime
+from typing import Annotated
 
-from dotenv import load_dotenv
-# from .db.config_reader import config
-from .schemas import ObjectSubject
-from .ML.pipeline import predict_pipeline
+from fastapi import FastAPI, HTTPException, Depends, Body
 
-load_dotenv(verbose=True)
+from sqlalchemy import create_engine, text, Column, Integer, Float
+from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.dialects.mysql import VARCHAR
 
-# try:
-#     HOST_DB = config.HOST_DB.get_secret_value()
-#     PORT_DB = config.PORT_DB.get_secret_value()
-#     USER_DB = config.USER_DB.get_secret_value()
-#     PASSWORD_DB = config.PASSWORD_DB.get_secret_value()
-#     NAME_DB = config.NAME_DB.get_secret_value()
-# except:
-HOST_DB = os.getenv('HOST_DB')
-PORT_DB = os.getenv('PORT_DB')
-USER_DB = os.getenv('USER_DB')
-PASSWORD_DB = os.getenv('PASSWORD_DB')
-NAME_DB = os.getenv('NAME_DB')
+from service.baseline.db.config_reader import config
+from service.baseline.schemas import ObjectSubject
+from service.baseline.ML.pipeline import predict_pipeline
+
+engine = create_engine(config.connection_url)
+try:
+    engine.connect()
+except SQLAlchemyError:
+    raise HTTPException(status_code=422)
+
+Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, unique=True, primary_key=True)
+    name = Column(VARCHAR(100))
+    registry_timestamp = Column(Integer)
+
+
+class MlModel(Base):
+    __tablename__ = "ml_model_actions"
+
+    id = Column(Integer, unique=True, primary_key=True)
+    user_id = Column(Integer)
+    timestamp = Column(Integer)
+    subject = Column(VARCHAR(100))
+    object = Column(VARCHAR(100))
+    predicate = Column(VARCHAR(100))
+    probability = Column(Float)
+
+
+def get_db():
+    db = Session()
+    try:
+        yield db
+    finally:
+        db.close()
+
 
 app = FastAPI()
 
 
-@app.get('/')
+@app.get("/")
 def root() -> str:
     return "Добро пожаловать на сервис для проекта"
 
 
-@app.get('/ping')
+@app.get("/ping")
 def ping_get():
     return {"message": "OK"}
 
 
-@app.post('/predict', summary='Predict')
-def predict(vals: ObjectSubject, user: str) -> int:
+@app.post("/predict", summary="Predict")
+def predict(
+    vals: ObjectSubject, user: Annotated[int, Body()], db: Session = Depends(get_db)
+) -> int | dict:
     """Uploads samples and returns predictions as Json"""
-    try:
-        conn = psycopg2.connect(dbname=NAME_DB, user=USER_DB, password=PASSWORD_DB, host=HOST_DB, port=PORT_DB)
-        conn.autocommit = True
-        cur = conn.cursor()
-    except psycopg2.OperationalError:
-        raise HTTPException(status_code=422)
 
     dict_vals = dict(vals)
 
-    cur.execute('''select max(id) from ml_model_actions;''')
-    row = cur.fetchone()
-    # if row:
-    #     max_id = row[0] + 1
-    # else:
-    #     max_id = 0
+    row = db.execute(text("""select max(id) from ml_model_actions;""")).fetchone()
 
-    cur.execute(f"""select id from users where name = '{user}';""")
-    row = cur.fetchone()
+    row = db.execute(
+        text(f"""select id from users where name = '{user}';""")
+    ).fetchone()
     try:
         user_id = row[0]
     except TypeError:
         return {"message": "Создайте пользователя /create_user"}
-
     predicate = predict_pipeline(dict_vals)
     for i in predicate:
-        # print(row, max_id)
-        cur.execute(f"""
-            INSERT
-            INTO
-            ml_model_actions
-            (user_id, timestamp, subject,
-            object, predicate, probability)
-            VALUES(
-                {user_id},\
-                {time.mktime(datetime.now().timetuple())},\
-                '{predicate[i]['subjects']}',\
-                '{predicate[i]['objects']}', \
-                '{predicate[i]['predicates']}', \
-                {predicate[i]['probabilities']});
-            """)
+        db_mlmodel = MlModel(
+            user_id=user_id,
+            timestamp=time.mktime(datetime.now().timetuple()),
+            subject=predicate[i]["subjects"],
+            object=predicate[i]["objects"],
+            predicate=predicate[i]["predicates"],
+            probability=predicate[i]["probabilities"],
+        )
+        db.add(db_mlmodel)
+        db.commit()
 
-    cur.close()
-    conn.close()
-    print('Ok')
     return predicate
 
 
-@app.get('/get_result', summary='Result')
-def get_result(res_id: int):
-    try:
-        conn = psycopg2.connect(dbname=NAME_DB, user=USER_DB, password=PASSWORD_DB, host=HOST_DB, port=PORT_DB)
-        conn.autocommit = True
-        cur = conn.cursor()
-    except psycopg2.OperationalError:
-        raise HTTPException(status_code=422)
+@app.get("/get_result", summary="Result")
+def get_result(res_id: int, db: Session = Depends(get_db)):
 
-    cur.execute(f'''select * from ml_model_actions where id = {res_id};''')
-    rows = cur.fetchall()
+    rows = db.execute(text(f"""select * from ml_model_actions where id = {res_id};""")).fetchall()
     res = {}
     for i in enumerate(rows):
-        res[i] = {'subject': rows[1], 'object': rows[2], 'predicate': rows[3], 'probability': rows[4]}
+        res[i] = {
+            "subject": rows[1],
+            "object": rows[2],
+            "predicate": rows[3],
+            "probability": rows[4],
+        }
 
-    cur.close()
-    conn.close()
     return res
 
 
-@app.post('/create_user/{user}')
-def create_user(user: str):
-    print(user)
+@app.post("/create_user/{user}")
+def create_user(user: str, db: Session = Depends(get_db)):
     try:
-        conn = psycopg2.connect(dbname=NAME_DB, user=USER_DB, password=PASSWORD_DB, host=HOST_DB, port=PORT_DB)
-        conn.autocommit = True
-        cur = conn.cursor()
-    except psycopg2.OperationalError:
-        raise HTTPException(status_code=422)
+        base_df = pd.read_sql("select * from users", con=db.connection())
 
-    try:
-        base_df = pd.read_sql('select * from users', con=conn)
-        # if base_df.empty:
-        #     max_id = 0
-        # else:
-        #     max_id = base_df.id.max() + 1
-        if base_df[base_df['name'] == user].empty:
-            cur.execute(f'''INSERT
-                            INTO
-                            users (name, registry_timestamp)
-                            VALUES('{user}', {time.mktime(datetime.now().timetuple())});''')
+        if base_df[base_df["name"] == user].empty:
+            db_user = User(
+                name=user, registry_timestamp=time.mktime(datetime.now().timetuple())
+            )
+            db.add(db_user)
+            db.commit()
             return {"message": "Юзер удачно добавлен"}
+
         else:
             return {"message": "Юзер существует"}
-
-        # cur.close()
-        # conn.close()
     except KeyError:
         raise HTTPException(status_code=422)
 
 
-@app.get('/get_all_users')
-def get_all_users():
+@app.get("/get_all_users")
+def get_all_users(db: Session = Depends(get_db)):
     try:
-        conn = psycopg2.connect(dbname=NAME_DB, user=USER_DB, password=PASSWORD_DB, host=HOST_DB, port=PORT_DB)
-        conn.autocommit = True
-
-        base_df = pd.read_sql('select * from users', con=conn)
-        return base_df.to_dict('records')
+        base_df = pd.read_sql(text("select * from users"), con=db.connection())
+        return base_df.to_dict("records")
     except psycopg2.OperationalError:
         raise HTTPException(status_code=422)
 
 
-@app.get('/get_all_results')
-def get_all_results():
+@app.get("/get_all_results")
+def get_all_results(db: Session = Depends(get_db)):
     try:
-        conn = psycopg2.connect(dbname=NAME_DB, user=USER_DB, password=PASSWORD_DB, host=HOST_DB, port=PORT_DB)
-        conn.autocommit = True
-
-        base_df = pd.read_sql('select * from ml_model_actions', con=conn)
-        return base_df.to_dict('records')
+        base_df = pd.read_sql(
+            text("select * from ml_model_actions"), con=db.connection()
+        )
+        return base_df.to_dict("records")
     except psycopg2.OperationalError:
         raise HTTPException(status_code=422)

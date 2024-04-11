@@ -1,0 +1,9 @@
+2024-04-11 16:17:06,456 [INFO] {/home/tgorbatova/movs/text_details_project/production_repo/telegram_bot/bot.py:63} root : Creating a logger for Main
+2024-04-11 16:17:06,643 [INFO] {/home/tgorbatova/miniconda3/envs/text_details/lib/python3.10/site-packages/aiogram/dispatcher/dispatcher.py:527} aiogram.dispatcher : Start polling
+2024-04-11 16:17:06,695 [INFO] {/home/tgorbatova/miniconda3/envs/text_details/lib/python3.10/site-packages/aiogram/dispatcher/dispatcher.py:341} aiogram.dispatcher : Run polling for bot @TestBot2751_bot id=6755411267 - 'TestBot2751'
+2024-04-11 16:17:19,940 [INFO] {/home/tgorbatova/miniconda3/envs/text_details/lib/python3.10/site-packages/aiogram/dispatcher/dispatcher.py:172} aiogram.event : Update id=182325839 is handled. Duration 205 ms by bot id=6755411267
+2024-04-11 16:17:22,610 [INFO] {/home/tgorbatova/miniconda3/envs/text_details/lib/python3.10/site-packages/aiogram/dispatcher/dispatcher.py:172} aiogram.event : Update id=182325840 is handled. Duration 91 ms by bot id=6755411267
+2024-04-11 16:19:26,133 [INFO] {/home/tgorbatova/miniconda3/envs/text_details/lib/python3.10/site-packages/aiogram/dispatcher/dispatcher.py:172} aiogram.event : Update id=182325841 is handled. Duration 42082 ms by bot id=6755411267
+2024-04-11 16:23:11,239 [WARNING] {/home/tgorbatova/miniconda3/envs/text_details/lib/python3.10/site-packages/aiogram/dispatcher/dispatcher.py:455} aiogram.dispatcher : Received SIGINT signal
+2024-04-11 16:23:11,239 [INFO] {/home/tgorbatova/miniconda3/envs/text_details/lib/python3.10/site-packages/aiogram/dispatcher/dispatcher.py:359} aiogram.dispatcher : Polling stopped for bot @TestBot2751_bot id=6755411267 - 'TestBot2751'
+2024-04-11 16:23:11,240 [INFO] {/home/tgorbatova/miniconda3/envs/text_details/lib/python3.10/site-packages/aiogram/dispatcher/dispatcher.py:554} aiogram.dispatcher : Polling stopped
