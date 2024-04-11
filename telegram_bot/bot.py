@@ -5,7 +5,6 @@ import time
 from typing import Optional
 
 import ast
-import asyncio
 import pandas as pd
 import numpy as np
 
@@ -297,4 +296,4 @@ def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
