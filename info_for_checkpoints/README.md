@@ -131,6 +131,6 @@
 
 ## 5. Примеры работы с телеграм ботом и тестирование проекта
 
-![Pipeline](https://github.com/NLP-team-MOVS2023/production_repo/Инфо_для_чекпоинтов/assets/бот.gif)
-![Pipeline](https://github.com/NLP-team-MOVS2023/production_repo/Инфо_для_чекпоинтов/assets/тест_бота.gif)
+![Pipeline](https://github.com/NLP-team-MOVS2023/production_repo/blob/60c1578b2486c5eba2940c59661e27a8f664cff7/info_for_checkpoints/assets/%D0%B1%D0%BE%D1%82.gif)
+![Pipeline](https://github.com/NLP-team-MOVS2023/production_repo/blob/60c1578b2486c5eba2940c59661e27a8f664cff7/info_for_checkpoints/assets/%D1%82%D0%B5%D1%81%D1%82_%D0%B1%D0%BE%D1%82%D0%B0.gif)
 
