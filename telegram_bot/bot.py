@@ -5,7 +5,7 @@ import time
 from typing import Optional
 
 import ast
-import asyncio
+# import asyncio
 import pandas as pd
 import numpy as np
 
@@ -47,11 +47,8 @@ def create_logger():
     formatter = logging.Formatter(
         "%(asctime)s [%(levelname)s] {%(pathname)s:%(lineno)d} %(name)s : %(message)s"
     )
-    file_handler = logging.StreamHandler()
-    file_handler.setFormatter(formatter)
     stream_handler = logging.StreamHandler()
     stream_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
     logger.addHandler(stream_handler)
     return logger
 
@@ -257,9 +254,5 @@ async def not_allowed(
     await message.answer(message_texts.invalid_cmd)
 
 
-async def main():
-    await dp.start_polling(bot)
-
-
 if __name__ == "__main__":
-    asyncio.run(main())
+    dp.run_polling(bot)
