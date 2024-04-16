@@ -22,15 +22,8 @@ def predict_pipeline(js):
         "with": 9,
     }
 
-    model_pkl_file = "service/baseline/src/RFClf.pkl"
+    model_pkl_file = "service/baseline/src/logreg.pkl"
     vectorizer_file = "service/baseline/src/CountVectorizer.pkl"
-    # repo='https://github.com/NLP-team-MOVS2023/nlp_project_MOVS.git'
-
-    # with dvc.api.open(model_pkl_file, repo=repo, mode='rb') as file:
-    #     model = joblib.load(file)
-
-    # with dvc.api.open(vectorizer_file, repo=repo, mode='rb') as file:
-    #     vec = joblib.load(file)
 
     with open(model_pkl_file, "rb") as f:
         model = joblib.load(f)
