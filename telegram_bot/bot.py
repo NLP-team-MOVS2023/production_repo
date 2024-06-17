@@ -166,6 +166,26 @@ async def make_predictions(
             )
         except HTTPError or ConnectionError:
             await message.answer(message_texts.connection_error)
+
+    elif message.document.mime_type == "application/json":
+        await message.answer(message_texts.processing)
+        file_bytes = await bot.download(message.document)
+        try:
+            response = requests.post(
+                f"{config.webhook_host}/predict_dl",
+                json=json.load(file_bytes),
+            )
+            response.raise_for_status()
+            response_dict = ast.literal_eval(response.text)
+            response_csv = json.dumps(response_dict)
+            predictions = BufferedInputFile(
+                io.BytesIO(response_csv).getvalue(), filename="predictions.json"
+            )
+            await bot.send_document(
+                message.chat.id, predictions, caption=message_texts.predictions
+            )
+        except HTTPError or ConnectionError:
+            await message.answer(message_texts.connection_error)
     else:
         await message.answer(message_texts.invalid_format)
 

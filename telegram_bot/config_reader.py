@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     bot_token: str
-    env_type: Optional[str] = None
+    ENV_TYPE: Optional[str] = None
     json_file: str = "data/feedback_ratings.json"
     webhook_host: str = "https://web-z763.onrender.com"
 

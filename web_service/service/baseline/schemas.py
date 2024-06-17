@@ -14,3 +14,8 @@ class PredictProba(BaseModel):
 class Timestamp(BaseModel):
     id: int
     timestamp: int
+
+
+class ObjectContext(BaseModel):
+    objects: List[str]
+    contexts: List[str]

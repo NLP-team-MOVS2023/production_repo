@@ -13,8 +13,9 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.dialects.mysql import VARCHAR
 
 from service.baseline.db.config_reader import config
-from service.baseline.schemas import ObjectSubject
+from service.baseline.schemas import ObjectSubject, ObjectContext
 from service.baseline.ML.pipeline import predict_pipeline
+from service.baseline.DL.dl_pipeline import predict_pipeline_dl
 
 engine = create_engine(config.connection_url)
 try:
@@ -98,6 +99,18 @@ def predict(
         db.commit()
 
     return predicate
+
+
+@app.post("/predict_dl", summary="Predict")
+def predict_dl(
+    vals: ObjectContext, user: Annotated[int, Body()], db: Session = Depends(get_db)
+) -> int | dict:
+    """Uploads samples and returns predictions as Json"""
+
+    dict_vals = dict(vals)
+    attributes = predict_pipeline_dl(dict_vals)
+
+    return attributes
 
 
 @app.get("/get_result", summary="Result")
