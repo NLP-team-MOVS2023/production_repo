@@ -146,46 +146,48 @@ async def make_predictions(
         await message.answer(message_texts.processing)
         file_bytes = await bot.download(message.document)
         df = pd.read_csv(file_bytes, encoding="utf-8", sep=None, engine="python")
-        try:
-            response = requests.post(
-                f"{config.webhook_host}/predict",
-                json={
-                    "vals": df.to_dict(orient="list"),
-                    "user": int(message.from_user.id),
-                },
-            )
-            response.raise_for_status()
-            response_dict = ast.literal_eval(response.text)
-            response_df = pd.DataFrame(response_dict.values())
-            response_csv = response_df.to_csv(index=False)
-            predictions = BufferedInputFile(
-                io.BytesIO(response_csv.encode()).getvalue(), filename="predictions.csv"
-            )
-            await bot.send_document(
-                message.chat.id, predictions, caption=message_texts.predictions
-            )
-        except HTTPError or ConnectionError:
-            await message.answer(message_texts.connection_error)
+        if "subject" in df.columns:
+            try:
+                response = requests.post(
+                    f"{config.webhook_host}/predict",
+                    json={
+                        "vals": df.to_dict(orient="list"),
+                        "user": int(message.from_user.id),
+                    },
+                )
+                response.raise_for_status()
+                response_dict = ast.literal_eval(response.text)
+                response_df = pd.DataFrame(response_dict.values())
+                response_csv = response_df.to_csv(index=False)
+                predictions = BufferedInputFile(
+                    io.BytesIO(response_csv.encode()).getvalue(), filename="predictions.csv"
+                )
+                await bot.send_document(
+                    message.chat.id, predictions, caption=message_texts.predictions
+                )
+            except HTTPError or ConnectionError:
+                await message.answer(message_texts.connection_error)
 
-    elif message.document.mime_type == "application/json":
-        await message.answer(message_texts.processing)
-        file_bytes = await bot.download(message.document)
-        try:
-            response = requests.post(
-                f"{config.webhook_host}/predict_dl",
-                json=json.load(file_bytes),
-            )
-            response.raise_for_status()
-            response_dict = ast.literal_eval(response.text)
-            response_csv = json.dumps(response_dict)
-            predictions = BufferedInputFile(
-                io.BytesIO(response_csv).getvalue(), filename="predictions.json"
-            )
-            await bot.send_document(
-                message.chat.id, predictions, caption=message_texts.predictions
-            )
-        except HTTPError or ConnectionError:
-            await message.answer(message_texts.connection_error)
+        else:
+            try:
+                response = requests.post(
+                    f"{config.webhook_host}/predict_dl",
+                    json={
+                        "vals": df.to_dict(orient="list"),
+                        "user": int(message.from_user.id),
+                    },
+                )
+                response.raise_for_status()
+                response_dict = ast.literal_eval(response.text)
+                response_csv = json.dumps(response_dict)
+                predictions = BufferedInputFile(
+                    io.BytesIO(response_csv).getvalue(), filename="predictions.json"
+                )
+                await bot.send_document(
+                    message.chat.id, predictions, caption=message_texts.predictions
+                )
+            except HTTPError or ConnectionError:
+                await message.answer(message_texts.connection_error)
     else:
         await message.answer(message_texts.invalid_format)
 
